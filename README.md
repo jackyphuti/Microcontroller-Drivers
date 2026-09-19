@@ -21,5 +21,3 @@ This firmware runs directly on the bare metal without any vendor hardware abstra
 ## Toolchain Prerequisites
 
 ### Fedora Linux (WSL or Native)
-```bash
-sudo dnf install -y arm-none-eabi-gcc arm-none-eabi-gcc-cs arm-none-eabi-binutils arm-none-eabi-newlib cmake make

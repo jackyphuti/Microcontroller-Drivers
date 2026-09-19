@@ -1,5 +1,9 @@
 build/
 build-*/
+build_tests/
+build_arm_check_*/
+CMakeCache.txt
+CMakeFiles/
 *.elf
 *.bin
 *.hex

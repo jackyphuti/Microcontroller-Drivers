@@ -1,4 +1,0 @@
-/mnt/c/Users/jacky/Documents/GitHub/Microcontroller-Drivers/build_tests_check/CMakeFiles/host_tests.dir
-/mnt/c/Users/jacky/Documents/GitHub/Microcontroller-Drivers/build_tests_check/CMakeFiles/test.dir
-/mnt/c/Users/jacky/Documents/GitHub/Microcontroller-Drivers/build_tests_check/CMakeFiles/edit_cache.dir
-/mnt/c/Users/jacky/Documents/GitHub/Microcontroller-Drivers/build_tests_check/CMakeFiles/rebuild_cache.dir

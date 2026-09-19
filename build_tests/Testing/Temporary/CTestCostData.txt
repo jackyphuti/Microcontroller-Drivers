@@ -1,2 +1,2 @@
-HostLogicTests 2 0.00504846
+HostLogicTests 3 0.00540933
 ---

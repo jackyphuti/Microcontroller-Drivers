@@ -8,31 +8,27 @@ int main() {
     led.Configure(Drivers::Gpio::Mode::Output, Drivers::Gpio::OutputType::PushPull);
 
     Drivers::Uart console(Drivers::Uart::Instance::Uart2, 115200);
-    
-    // Arm the hardware interrupt pipeline
     console.EnableInterrupts();
     Drivers::Watchdog::Enable(2000);
 
-    console.Write("\r\n[BOOT] Interrupt-Driven UART Online.\r\n");
+    console.Write("\r\n[BOOT] Ring Buffer and Interrupts Online.\r\n");
 
     while (true) {
         Drivers::Watchdog::ResetTimer();
         
-        // Non-blocking check for async data injected by the IRQ handler
-        if (Drivers::g_async_rx_ready) {
-            char incoming = Drivers::g_async_rx_char;
-            Drivers::g_async_rx_ready = false; // Clear the flag
-
-            console.Write("\r\n[IRQ] CPU was interrupted! Received: ");
-            console.Write(incoming);
+        // Safely extract and process everything in the queue
+        while (auto data = Drivers::g_rx_buffer.Pop()) {
+            char c = *data;
+            
+            console.Write("\r\n[PROCESS] Pulled from buffer: ");
+            console.Write(c);
             console.Write("\r\n");
             
-            // Toggle LED instantly upon receiving a keystroke
-            led.Toggle(); 
+            led.Toggle();
         }
 
-        // The CPU is now free to do heavy processing here without missing data
-        // ...
+        // Do heavy work here (e.g., rendering a display, calculating math)
+        // The interrupt will continue catching new UART bytes in the background.
     }
     return 0;
 }

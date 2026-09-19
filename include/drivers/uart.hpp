@@ -3,6 +3,7 @@
 #include <cstdint>
 #include <string_view>
 #include <optional>
+#include "core/ring_buffer.hpp"
 
 namespace Drivers {
 
@@ -35,8 +36,5 @@ private:
     static void EnableClock(Instance instance);
 };
 
-// Global flags for the IRQ handler to communicate with main()
-extern volatile char g_async_rx_char;
-extern volatile bool g_async_rx_ready;
-
+extern core::RingBuffer<char, 256> g_async_rx_buffer;
 } // namespace Drivers

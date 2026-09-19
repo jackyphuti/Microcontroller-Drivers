@@ -1,10 +1,9 @@
 #include "drivers/uart.hpp"
 #include "drivers/gpio.hpp"
-
+    
 namespace Drivers {
 
-volatile char g_async_rx_char = '\0';
-volatile bool g_async_rx_ready = false;
+core::RingBuffer<char, 256> g_async_rx_buffer;
 
 // ... (Keep existing EnableClock, Constructor, and Write methods) ...
 
@@ -33,8 +32,9 @@ extern "C" void USART2_IRQHandler() {
 
     // Check if the interrupt was caused by the RX Not Empty (RXNE) flag
     if (*sr & (1U << 5)) { 
+        char incoming = static_cast<char>(*dr & 0xFF); // Read the received byte
+        // Push the received byte into the global ring buffer for later processing
         // Reading the Data Register (DR) automatically clears the interrupt flag
-        Drivers::g_async_rx_char = static_cast<char>(*dr & 0xFF);
-        Drivers::g_async_rx_ready = true;
+        Drivers::g_async_rx_buffer.Push(static_cast<char>(*dr & 0xFF));
     }
 }

@@ -1,8 +1,8 @@
 #pragma once
 
 #include <cstdint>
-#include <optional>
 #include <string_view>
+#include <optional>
 
 namespace Drivers {
 
@@ -14,11 +14,11 @@ public:
 
     explicit Uart(Instance instance, std::uint32_t baudrate);
 
-    [[nodiscard]] bool Write(char c, std::uint32_t timeout_ms) const;
-    [[nodiscard]] bool Write(const char* message, std::uint32_t timeout_ms) const;
-    [[nodiscard]] bool Write(std::string_view message, std::uint32_t timeout_ms) const;
-    [[nodiscard]] std::optional<char> Read(std::uint32_t timeout_ms) const;
-    [[nodiscard]] bool HasData() const;
+    void Write(char c) const;
+    void Write(std::string_view message) const;
+    
+    // Interrupt Control
+    void EnableInterrupts() const;
 
 private:
     struct Registers {
@@ -32,8 +32,11 @@ private:
     };
 
     Registers* const regs_;
-
     static void EnableClock(Instance instance);
 };
+
+// Global flags for the IRQ handler to communicate with main()
+extern volatile char g_async_rx_char;
+extern volatile bool g_async_rx_ready;
 
 } // namespace Drivers

@@ -3,63 +3,38 @@
 
 namespace Drivers {
 
-inline constexpr std::uintptr_t RCC_APB1ENR = 0x40023840UL;
+volatile char g_async_rx_char = '\0';
+volatile bool g_async_rx_ready = false;
 
-void Uart::EnableClock(Instance instance) {
-    if (instance == Instance::Uart2) {
-        auto* apb1 = reinterpret_cast<volatile std::uint32_t*>(RCC_APB1ENR);
-        *apb1 |= (1U << 17); // Enable USART2 clock
-    }
-}
+// ... (Keep existing EnableClock, Constructor, and Write methods) ...
 
-Uart::Uart(Instance instance, std::uint32_t baudrate) 
-    : regs_(reinterpret_cast<Registers*>(static_cast<std::uintptr_t>(instance))) {
+void Uart::EnableInterrupts() const {
+    // 1. Enable the RX Not Empty Interrupt on the UART peripheral
+    regs_->CR1 |= (1U << 5); // RXNEIE
+
+    // 2. Enable IRQ 38 in the CPU's Nested Vector Interrupt Controller (NVIC)
+    // The NVIC ISER (Interrupt Set-Enable Registers) are 32-bits wide.
+    // IRQ 38 is in ISER[1] (which handles IRQs 32-63) at bit 6 (38 - 32 = 6).
+    inline constexpr std::uintptr_t NVIC_ISER1 = 0xE000E104UL;
+    auto* iser1 = reinterpret_cast<volatile std::uint32_t*>(NVIC_ISER1);
     
-    // Configure GPIO Pins (PA2 = TX, PA3 = RX) with AF7
-    Gpio tx(Gpio::Port::A, 2);
-    Gpio rx(Gpio::Port::A, 3);
-    
-    tx.Configure(Gpio::Mode::Alternate, Gpio::OutputType::PushPull, Gpio::Speed::High, Gpio::Pull::None);
-    tx.SetAlternateFunction(7);
-
-    rx.Configure(Gpio::Mode::Alternate, Gpio::OutputType::PushPull, Gpio::Speed::High, Gpio::Pull::None);
-    rx.SetAlternateFunction(7);
-
-    EnableClock(instance);
-
-    // Compute Baud Rate Divider for 16MHz Peripheral Bus Clock
-    // BaudRate = Fck / (16 * USARTDIV) -> USARTDIV = 16MHz / (16 * BaudRate) = 1MHz / BaudRate
-    const std::uint32_t apb1_freq = 16000000UL;
-    regs_->BRR = (apb1_freq + (baudrate / 2U)) / baudrate;
-
-    // Enable Transmitter, Receiver, and USART peripheral
-    regs_->CR1 = (1U << 13) | (1U << 3) | (1U << 2); // UE | TE | RE
-}
-
-void Uart::Write(char c) const {
-    // Wait until Transmit Data Register is Empty (TXE bit 7)
-    while (!(regs_->SR & (1U << 7))) {
-        asm volatile("nop");
-    }
-    regs_->DR = static_cast<std::uint8_t>(c);
-}
-
-void Uart::Write(std::string_view message) const {
-    for (char c : message) {
-        Write(c);
-    }
-}
-
-bool Uart::HasData() const {
-    // Read Data Register Not Empty (RXNE bit 5)
-    return (regs_->SR & (1U << 5)) != 0;
-}
-
-char Uart::Read() const {
-    while (!HasData()) {
-        asm volatile("nop");
-    }
-    return static_cast<char>(regs_->DR & 0xFF);
+    *iser1 |= (1U << 6);
 }
 
 } // namespace Drivers
+
+// ---------------------------------------------------------
+// Hardware Interrupt Request (IRQ) Handler
+// ---------------------------------------------------------
+// This function instantly interrupts the CPU the microsecond a byte arrives.
+extern "C" void USART2_IRQHandler() {
+    auto* sr = reinterpret_cast<volatile std::uint32_t*>(0x40004400UL); // USART2 SR
+    auto* dr = reinterpret_cast<volatile std::uint32_t*>(0x40004404UL); // USART2 DR
+
+    // Check if the interrupt was caused by the RX Not Empty (RXNE) flag
+    if (*sr & (1U << 5)) { 
+        // Reading the Data Register (DR) automatically clears the interrupt flag
+        Drivers::g_async_rx_char = static_cast<char>(*dr & 0xFF);
+        Drivers::g_async_rx_ready = true;
+    }
+}

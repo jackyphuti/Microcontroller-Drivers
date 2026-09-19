@@ -8,34 +8,31 @@ int main() {
     led.Configure(Drivers::Gpio::Mode::Output, Drivers::Gpio::OutputType::PushPull);
 
     Drivers::Uart console(Drivers::Uart::Instance::Uart2, 115200);
-
-    // Enable the watchdog with a 2000 ms (2 second) timeout
+    
+    // Arm the hardware interrupt pipeline
+    console.EnableInterrupts();
     Drivers::Watchdog::Enable(2000);
 
-    console.Write("\r\n[BOOT] System started. Watchdog armed (2000ms).\r\n");
+    console.Write("\r\n[BOOT] Interrupt-Driven UART Online.\r\n");
 
     while (true) {
-        // "Pet" the dog at the top of every loop to prove the OS is still breathing
         Drivers::Watchdog::ResetTimer();
+        
+        // Non-blocking check for async data injected by the IRQ handler
+        if (Drivers::g_async_rx_ready) {
+            char incoming = Drivers::g_async_rx_char;
+            Drivers::g_async_rx_ready = false; // Clear the flag
 
-        led.Toggle();
-        Core::DelayMs(500);
-        console.Write("[HEARTBEAT] Loop OK.\r\n");
-
-        if (console.HasData()) {
-            const char incoming = console.Read(0).value_or('\0');
+            console.Write("\r\n[IRQ] CPU was interrupted! Received: ");
+            console.Write(incoming);
+            console.Write("\r\n");
             
-            // Artificial fault trigger: If you press 'X', the loop intentionally hangs
-            if (incoming == 'X') {
-                console.Write("[FAULT] Intentionally freezing the CPU. Goodbye.\r\n");
-                
-                // The watchdog will count down to 0 here and physically reset the STM32
-                while (true) {
-                    asm volatile("nop"); 
-                }
-            }
+            // Toggle LED instantly upon receiving a keystroke
+            led.Toggle(); 
         }
-    }
 
+        // The CPU is now free to do heavy processing here without missing data
+        // ...
+    }
     return 0;
 }

@@ -32,6 +32,27 @@ extern "C" void SysTick_Handler() {
     Core::IncrementTick();
 }
 
+// Peripheral Interrupt Handlers
+void USART2_IRQHandler()  __attribute__((weak, alias("Default_Handler")));
+
+__attribute__((section(".isr_vector"), used))
+const IsrHandler g_vector_table[] = {
+    reinterpret_cast<IsrHandler>(&_estack),
+    Reset_Handler, NMI_Handler, HardFault_Handler, MemManage_Handler,
+    BusFault_Handler, UsageFault_Handler, nullptr, nullptr, nullptr, nullptr,
+    SVC_Handler, DebugMon_Handler, nullptr, PendSV_Handler, SysTick_Handler,
+
+    // Peripheral Interrupts (IRQs 0 to 37 padded with nullptrs)
+    nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr,
+    nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr,
+    nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr,
+    nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr,
+    nullptr, nullptr, nullptr, nullptr, nullptr, nullptr,
+    
+    // IRQ 38: USART2 Global Interrupt
+    USART2_IRQHandler 
+};
+
 // Vector Table matching Cortex-M hardware specification
 using IsrHandler = void (*)();
 

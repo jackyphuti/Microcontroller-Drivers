@@ -17,6 +17,8 @@ volatile std::uint32_t* const rcc_apb1enr =
 
 namespace Drivers {
 
+Core::RingBuffer<char, 256> g_rx_buffer;
+
 Uart::Uart(Instance instance, std::uint32_t baudrate)
 	: regs_(reinterpret_cast<Registers*>(static_cast<std::uintptr_t>(instance))) {
 	EnableClock(instance);
@@ -83,4 +85,18 @@ bool Uart::HasData() const {
 	return (regs_->SR & (1U << 5)) != 0U;
 }
 
+void Uart::EnableInterrupts() const {
+	regs_->CR1 |= (1U << 5);
+	auto* const nvic_iser1 = reinterpret_cast<volatile std::uint32_t*>(0xE000E104UL);
+	*nvic_iser1 |= (1U << 6);
+}
+
 } // namespace Drivers
+
+extern "C" void USART2_IRQHandler() {
+	auto* const status = reinterpret_cast<volatile std::uint32_t*>(0x40004400UL);
+	auto* const data = reinterpret_cast<volatile std::uint32_t*>(0x40004404UL);
+	if ((*status & (1U << 5)) != 0U) {
+		Drivers::g_rx_buffer.Push(static_cast<char>(*data & 0xFFU));
+	}
+}

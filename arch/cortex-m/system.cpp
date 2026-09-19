@@ -47,7 +47,7 @@ void SystemInit() {
 }
 
 void IncrementTick() {
-    ++g_system_ticks;
+    g_system_ticks = g_system_ticks + 1;
 }
 
 std::uint64_t GetTick() {

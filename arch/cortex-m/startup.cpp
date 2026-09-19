@@ -15,46 +15,27 @@ extern "C" {
 
     int main();
     [[noreturn]] void Reset_Handler() noexcept;
-    [[noreturn]] void Default_Handler() noexcept;
+    void Default_Handler();
 }
 
 // Exception handlers declarations with weak linkage
-[[noreturn]] void NMI_Handler() noexcept        __attribute__((weak, alias("Default_Handler")));
+void NMI_Handler()        __attribute__((weak, alias("Default_Handler")));
 extern "C" [[noreturn]] void HardFault_Handler() noexcept;
-[[noreturn]] void MemManage_Handler() noexcept  __attribute__((weak, alias("Default_Handler")));
-[[noreturn]] void BusFault_Handler() noexcept   __attribute__((weak, alias("Default_Handler")));
-[[noreturn]] void UsageFault_Handler() noexcept __attribute__((weak, alias("Default_Handler")));
-[[noreturn]] void SVC_Handler() noexcept        __attribute__((weak, alias("Default_Handler")));
-[[noreturn]] void DebugMon_Handler() noexcept   __attribute__((weak, alias("Default_Handler")));
-[[noreturn]] void PendSV_Handler() noexcept     __attribute__((weak, alias("Default_Handler")));
+void MemManage_Handler()  __attribute__((weak, alias("Default_Handler")));
+void BusFault_Handler()   __attribute__((weak, alias("Default_Handler")));
+void UsageFault_Handler() __attribute__((weak, alias("Default_Handler")));
+void SVC_Handler()        __attribute__((weak, alias("Default_Handler")));
+void DebugMon_Handler()   __attribute__((weak, alias("Default_Handler")));
+void PendSV_Handler()     __attribute__((weak, alias("Default_Handler")));
 
 extern "C" void SysTick_Handler() {
     Core::IncrementTick();
 }
 
-// Peripheral Interrupt Handlers
-void USART2_IRQHandler()  __attribute__((weak, alias("Default_Handler")));
-
-__attribute__((section(".isr_vector"), used))
-const IsrHandler g_vector_table[] = {
-    reinterpret_cast<IsrHandler>(&_estack),
-    Reset_Handler, NMI_Handler, HardFault_Handler, MemManage_Handler,
-    BusFault_Handler, UsageFault_Handler, nullptr, nullptr, nullptr, nullptr,
-    SVC_Handler, DebugMon_Handler, nullptr, PendSV_Handler, SysTick_Handler,
-
-    // Peripheral Interrupts (IRQs 0 to 37 padded with nullptrs)
-    nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr,
-    nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr,
-    nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr,
-    nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr,
-    nullptr, nullptr, nullptr, nullptr, nullptr, nullptr,
-    
-    // IRQ 38: USART2 Global Interrupt
-    USART2_IRQHandler 
-};
-
 // Vector Table matching Cortex-M hardware specification
 using IsrHandler = void (*)();
+
+extern "C" void USART2_IRQHandler() __attribute__((weak, alias("Default_Handler")));
 
 __attribute__((section(".isr_vector"), used))
 const IsrHandler g_vector_table[] = {
@@ -73,7 +54,7 @@ const IsrHandler g_vector_table[] = {
     SysTick_Handler,
 };
 
-[[noreturn]] void Default_Handler() noexcept {
+void Default_Handler() {
     while (true) {
         asm volatile("bkpt #0");
     }

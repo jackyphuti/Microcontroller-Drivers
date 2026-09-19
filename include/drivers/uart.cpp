@@ -3,7 +3,7 @@
     
 namespace Drivers {
 
-core::RingBuffer<char, 256> g_async_rx_buffer;
+Core::RingBuffer<char, 256> g_rx_buffer;
 
 // ... (Keep existing EnableClock, Constructor, and Write methods) ...
 
@@ -35,6 +35,6 @@ extern "C" void USART2_IRQHandler() {
         char incoming = static_cast<char>(*dr & 0xFF); // Read the received byte
         // Push the received byte into the global ring buffer for later processing
         // Reading the Data Register (DR) automatically clears the interrupt flag
-        Drivers::g_async_rx_buffer.Push(static_cast<char>(*dr & 0xFF));
+        Drivers::g_rx_buffer.Push(incoming);
     }
 }

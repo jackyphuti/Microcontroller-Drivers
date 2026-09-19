@@ -1,0 +1,7 @@
+# ninja log v7
+195	522	1789784393460273300	CMakeFiles/mcu-baremetal-firmware.elf.dir/arch/cortex-m/system.cpp.obj	3e13332e17c2c456
+180	573	1789784393443848400	CMakeFiles/mcu-baremetal-firmware.elf.dir/arch/cortex-m/startup.cpp.obj	5fac10b8ada0e438
+215	614	1789784393487208000	CMakeFiles/mcu-baremetal-firmware.elf.dir/drivers/gpio/gpio.cpp.obj	c46a33bc7897be31
+293	640	1789784393569115200	CMakeFiles/mcu-baremetal-firmware.elf.dir/include/drivers/watchdog/watchdog.cpp.obj	18a037a4bde85d2f
+371	880	1789784393644773000	CMakeFiles/mcu-baremetal-firmware.elf.dir/include/drivers/spi/spi.cpp.obj	827b4642400603df
+326	990	1789784393605207200	CMakeFiles/mcu-baremetal-firmware.elf.dir/include/drivers/i2c/i2c.cpp.obj	9fe3dbeafbae4a8c

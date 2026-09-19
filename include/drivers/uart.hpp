@@ -15,8 +15,11 @@ public:
 
     explicit Uart(Instance instance, std::uint32_t baudrate);
 
-    void Write(char c) const;
-    void Write(std::string_view message) const;
+    bool Write(char c, std::uint32_t timeout_ms = 100) const;
+    bool Write(const char* message, std::uint32_t timeout_ms = 100) const;
+    bool Write(std::string_view message, std::uint32_t timeout_ms = 100) const;
+    [[nodiscard]] std::optional<char> Read(std::uint32_t timeout_ms = 100) const;
+    [[nodiscard]] bool HasData() const;
     
     // Interrupt Control
     void EnableInterrupts() const;
@@ -36,5 +39,5 @@ private:
     static void EnableClock(Instance instance);
 };
 
-extern core::RingBuffer<char, 256> g_async_rx_buffer;
+extern Core::RingBuffer<char, 256> g_rx_buffer;
 } // namespace Drivers

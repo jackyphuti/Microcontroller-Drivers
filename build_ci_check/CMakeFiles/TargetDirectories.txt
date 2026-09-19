@@ -1,0 +1,3 @@
+/mnt/c/Users/jacky/Documents/GitHub/Microcontroller-Drivers/build_ci_check/CMakeFiles/mcu-baremetal-firmware.elf.dir
+/mnt/c/Users/jacky/Documents/GitHub/Microcontroller-Drivers/build_ci_check/CMakeFiles/edit_cache.dir
+/mnt/c/Users/jacky/Documents/GitHub/Microcontroller-Drivers/build_ci_check/CMakeFiles/rebuild_cache.dir

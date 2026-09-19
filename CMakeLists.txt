@@ -11,6 +11,8 @@ if(CMAKE_SYSTEM_NAME STREQUAL "Generic")
         drivers/gpio/gpio.cpp
         drivers/uart/uart.cpp
         drivers/watchdog/watchdog.cpp
+        drivers/i2c/i2c.cpp
+        drivers/spi/spi.cpp
         src/main.cpp
     )
 

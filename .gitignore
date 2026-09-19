@@ -1,0 +1,9 @@
+build/
+build-*/
+*.elf
+*.bin
+*.hex
+*.map
+.vscode/
+.cache/
+compile_commands.json

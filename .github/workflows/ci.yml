@@ -1,0 +1,56 @@
+name: Bare-Metal CI/CD Pipeline
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build-and-analyze:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Install ARM GNU Toolchain
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y gcc-arm-none-eabi binutils-arm-none-eabi cmake ninja-build
+
+    - name: Configure CMake
+      run: cmake -S . -B build -G Ninja -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-arm-none-eabi.cmake -DCMAKE_BUILD_TYPE=Release
+
+    - name: Build Firmware
+      run: cmake --build build
+
+    - name: Analyze Memory Usage
+      run: |
+        echo "Validating against 512K Flash and 128K SRAM limits..."
+        arm-none-eabi-size --format=berkeley build/mcu-baremetal-firmware.elf
+
+    - name: Archive Production Artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: firmware-release-artifacts
+        path: |
+          build/*.bin
+          build/*.hex
+          build/*.elf
+          build/*.map
+
+  host-tests:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Configure Native CMake
+      run: cmake -S . -B build_tests -DCMAKE_BUILD_TYPE=Debug
+
+    - name: Build Tests
+      run: cmake --build build_tests
+
+    - name: Run Tests
+      run: ctest --test-dir build_tests --output-on-failure

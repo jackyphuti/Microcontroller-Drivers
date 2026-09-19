@@ -1,0 +1,18 @@
+Start testing: Sep 19 03:39 SAST
+----------------------------------------------------------
+1/1 Testing: HostLogicTests
+1/1 Test: HostLogicTests
+Command: "/mnt/c/Users/jacky/Documents/GitHub/Microcontroller-Drivers/build_tests/host_tests"
+Directory: /mnt/c/Users/jacky/Documents/GitHub/Microcontroller-Drivers/build_tests
+"HostLogicTests" start time: Sep 19 03:39 SAST
+Output:
+----------------------------------------------------------
+<end of output>
+Test time =   0.01 sec
+----------------------------------------------------------
+Test Passed.
+"HostLogicTests" end time: Sep 19 03:39 SAST
+"HostLogicTests" time elapsed: 00:00:00
+----------------------------------------------------------
+
+End testing: Sep 19 03:39 SAST

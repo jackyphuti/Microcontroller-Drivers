@@ -70,6 +70,15 @@ SECTIONS
         __bss_end__ = _ebss;
     } > SRAM
 
+    /* Uninitialized variables that persist across warm reset */
+    .noinit (NOLOAD) :
+    {
+        . = ALIGN(4);
+        *(.noinit)
+        *(.noinit*)
+        . = ALIGN(4);
+    } > SRAM
+
     /* Discard exception frame unwind indices */
     /DISCARD/ :
     {

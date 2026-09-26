@@ -75,6 +75,7 @@ int main() {
                         console.Write("Commands:\r\n");
                         console.Write("  h - Help\r\n");
                         console.Write("  i - Scan I2C bus for devices\r\n");
+                        console.Write("  s - Test SPI transfer\r\n");
                         console.Write("  f - Force a crash (Test Watchdog)\r\n");
                     } 
                     else if (cmd_buffer[0] == 'i') {
@@ -93,6 +94,13 @@ int main() {
                         if (devices_found == 0) {
                             console.Write("  No devices found.\r\n");
                         }
+                    }
+                    else if (cmd_buffer[0] == 's') {
+                        console.Write("[SPI] Transfer test byte (0xA5)...\r\n");
+                        std::uint8_t rx = spi.Transfer(0xA5);
+                        console.Write("  TX: 0xA5, RX: 0x");
+                        PrintHex8(console, rx);
+                        console.Write("\r\n");
                     }
                     else if (cmd_buffer[0] == 'f') {
                         console.Write("[FAULT] Hanging the CPU. Watchdog will reset system in 2s...\r\n");

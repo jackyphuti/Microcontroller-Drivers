@@ -52,6 +52,19 @@ const IsrHandler g_vector_table[] = {
     nullptr,                                // Reserved
     PendSV_Handler,
     SysTick_Handler,
+
+    // Peripheral Interrupts (IRQs 0 to 37 mapped to Default_Handler)
+    Default_Handler, Default_Handler, Default_Handler, Default_Handler, Default_Handler,
+    Default_Handler, Default_Handler, Default_Handler, Default_Handler, Default_Handler,
+    Default_Handler, Default_Handler, Default_Handler, Default_Handler, Default_Handler,
+    Default_Handler, Default_Handler, Default_Handler, Default_Handler, Default_Handler,
+    Default_Handler, Default_Handler, Default_Handler, Default_Handler, Default_Handler,
+    Default_Handler, Default_Handler, Default_Handler, Default_Handler, Default_Handler,
+    Default_Handler, Default_Handler, Default_Handler, Default_Handler, Default_Handler,
+    Default_Handler, Default_Handler, Default_Handler,
+
+    // IRQ 38: USART2 Global Interrupt
+    USART2_IRQHandler
 };
 
 void Default_Handler() {

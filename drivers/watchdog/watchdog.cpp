@@ -11,23 +11,24 @@ void Watchdog::Enable(std::uint32_t timeout_ms) {
         timeout_ms = 4095;
     }
 
-    // 1. Write the magic key to enable access to PR and RLR
+    // 1. Start the watchdog (This automatically turns on the physical LSI oscillator)
+    regs_->KR = 0xCCCC; 
+
+    // 2. Write the magic key to enable access to PR and RLR
     regs_->KR = 0x5555; 
 
-    // 2. Set prescaler to /32. 
+    // 3. Set prescaler to /32. 
     // LSI is ~32 kHz. 32000 / 32 = 1000 Hz (1 tick = 1 ms).
     regs_->PR = 0x03; 
 
-    // 3. Set the countdown reload value
+    // 4. Set the countdown reload value
     regs_->RLR = timeout_ms; 
 
-    // 4. Wait for the status register to confirm the updates are written to the LSI domain
-    while (regs_->SR != 0) {
+    // 5. Wait for the status register to confirm the updates are written to the LSI domain
+    std::uint32_t timeout = 50000;
+    while (regs_->SR != 0 && --timeout) {
         asm volatile("nop");
     }
-
-    // 5. Start the watchdog (This automatically turns on the physical LSI oscillator)
-    regs_->KR = 0xCCCC; 
 
     // 6. Perform the first reload to initialize the counter
     ResetTimer();

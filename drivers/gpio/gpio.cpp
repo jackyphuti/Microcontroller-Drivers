@@ -3,7 +3,6 @@
 namespace {
 
 constexpr std::uintptr_t RCC_AHB1ENR = 0x40023830UL;
-constexpr std::uint32_t GPIOA_CLOCK = 1U << 0;
 
 volatile std::uint32_t* const rcc_ahb1enr =
 	reinterpret_cast<volatile std::uint32_t*>(RCC_AHB1ENR);
@@ -19,8 +18,10 @@ Gpio::Gpio(Port port, std::uint8_t pin)
 }
 
 void Gpio::EnableClock(Port port) {
-	if (port == Port::A) {
-		*rcc_ahb1enr |= GPIOA_CLOCK;
+	switch (port) {
+		case Port::A: *rcc_ahb1enr |= (1U << 0); break;
+		case Port::B: *rcc_ahb1enr |= (1U << 1); break;
+		case Port::C: *rcc_ahb1enr |= (1U << 2); break;
 	}
 }
 

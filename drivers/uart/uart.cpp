@@ -1,4 +1,5 @@
 #include "drivers/uart.hpp"
+#include "drivers/gpio.hpp"
 #include "core/system.hpp"
 
 namespace {
@@ -23,15 +24,15 @@ Uart::Uart(Instance instance, std::uint32_t baudrate)
 	: regs_(reinterpret_cast<Registers*>(static_cast<std::uintptr_t>(instance))) {
 	EnableClock(instance);
 
-	// USART2 uses PA2/PA3 with alternate-function mapping 7.
-	auto* gpio_moder = reinterpret_cast<volatile std::uint32_t*>(0x40020000UL);
-	auto* gpio_afrl = reinterpret_cast<volatile std::uint32_t*>(0x40020020UL);
-	*gpio_moder = (*gpio_moder & ~((0b11U << 4U) | (0b11U << 6U))) |
-				  (0b10U << 4U) | (0b10U << 6U);
-	*gpio_afrl = (*gpio_afrl & ~((0xFU << 8U) | (0xFU << 12U))) |
-				 (7U << 8U) | (7U << 12U);
+	// USART2 uses PA2 (TX) and PA3 (RX) with alternate-function mapping 7.
+	Gpio tx(Gpio::Port::A, 2);
+	Gpio rx(Gpio::Port::A, 3);
+	tx.Configure(Gpio::Mode::Alternate, Gpio::OutputType::PushPull, Gpio::Speed::High, Gpio::Pull::None);
+	rx.Configure(Gpio::Mode::Alternate, Gpio::OutputType::PushPull, Gpio::Speed::High, Gpio::Pull::PullUp);
+	tx.SetAlternateFunction(7);
+	rx.SetAlternateFunction(7);
 
-	regs_->BRR = 16000000UL / baudrate;
+	regs_->BRR = (16000000UL + (baudrate / 2U)) / baudrate;
 	regs_->CR1 = (1U << 13) | (1U << 3) | (1U << 2);
 }
 
@@ -96,7 +97,10 @@ void Uart::EnableInterrupts() const {
 extern "C" void USART2_IRQHandler() {
 	auto* const status = reinterpret_cast<volatile std::uint32_t*>(0x40004400UL);
 	auto* const data = reinterpret_cast<volatile std::uint32_t*>(0x40004404UL);
-	if ((*status & (1U << 5)) != 0U) {
+	const std::uint32_t sr = *status;
+	if ((sr & (1U << 5)) != 0U) { // RXNE
 		Drivers::g_rx_buffer.Push(static_cast<char>(*data & 0xFFU));
+	} else if ((sr & (1U << 3)) != 0U) { // ORE: Overrun Error
+		(void)*data; // Reading DR clears ORE after SR has been read
 	}
 }
